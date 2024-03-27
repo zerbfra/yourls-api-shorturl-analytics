@@ -42,9 +42,10 @@ curl -X GET "http://yourls-site.com/yourls-api.php?signature=YuorSignature&actio
   "statusCode": 200,
   "message": "success",
   "stats": {
-    "total_clicks": 15,
+    "total_clicks": 15, # Total clicks (lifetime)
+    "range_clicks": 15, # Total clicks (in the range)
     "daily_clicks": {
-      "2024-01-01": 15
+      "2024-01-01": 15 # Total clicks (in the specific date)
     }
   }
 }
@@ -63,9 +64,10 @@ curl -X GET "http://yourls-site.com/yourls-api.php?signature=YuorSignature&actio
     "statusCode": 200,
     "message": "success",
     "stats": {
-        "total_clicks": 24,
+        "total_clicks": 120, # Total clicks (lifetime)
+        "range_clicks": 24, # Total clicks (in the range)
         "daily_clicks": {
-          "2024-01-01": 15,
+          "2024-01-01": 15 # Total clicks (in the specific date)
           "2024-01-02": 8,
           "2024-01-03": 1,
           "2024-01-04": 0,
