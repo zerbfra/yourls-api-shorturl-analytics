@@ -9,7 +9,10 @@ Yourls API ShortURL Analytics is a plugin for Yourls that provides analytics for
 
 ## Requirements
 
-Requires Yourls version X.X.X and above.
+This plugin requires YOURLS version 1.7.3 and above and Php >= 7.0.
+
+**Note**: Please, if you've tested it with other versions and it works fine, contact me and I will update this section.
+
 
 ## Installation
 Download the latest release from the releases page.
