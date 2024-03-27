@@ -91,6 +91,8 @@ function extractStats($shorturl, $date_start, $date_end = null)
         try {
             // Count total numbers of click
             $total_clicks = $ydb->fetchOne("SELECT COUNT(*) as count FROM " . YOURLS_DB_TABLE_LOG . " WHERE `shorturl` = :shorturl", ['shorturl' => $shorturl]);
+
+            // Count total numbers of click for any date in the range
             $daily_clicks = $ydb->fetchPairs("SELECT DATE(`click_time`) as date, COUNT(*) as count FROM " . YOURLS_DB_TABLE_LOG . " WHERE `shorturl` = :shorturl AND `click_time` BETWEEN :date_start AND :date_end GROUP BY `date`", ['shorturl' => $shorturl, 'date_start' => $date_start, 'date_end' => $date_end]);
         } catch (\Throwable $e) {
             var_dump($e->getMessage()); die;
@@ -98,11 +100,12 @@ function extractStats($shorturl, $date_start, $date_end = null)
 
         $results = [
             'total_clicks' => (int) $total_clicks[array_key_first($total_clicks)],
-            'daily_clicks' => []
+            'range_clicks' => 0,
+            'daily_clicks' => [],
         ];
-
         foreach ($datesRange as $date) {
             $results['daily_clicks'][$date] = (int) ($daily_clicks[$date] ?? 0);
+            $results['range_clicks'] += $results['daily_clicks'][$date];
         }
 
         return $results;
