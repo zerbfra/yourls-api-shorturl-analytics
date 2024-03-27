@@ -75,7 +75,7 @@ function shorturl_analytics(): array
 /**
  * @throws Exception
  */
-function extractStats($keyword, $date_start, $date_end = null)
+function extractStats($shorturl, $date_start, $date_end = null)
 {
     global $ydb;
 
@@ -90,8 +90,8 @@ function extractStats($keyword, $date_start, $date_end = null)
 
         try {
             // Count total numbers of click
-            $total_clicks = $ydb->fetchOne("SELECT COUNT(*) as count FROM " . YOURLS_DB_TABLE_LOG . " WHERE `keyword` = :keyword", ['keyword' => $keyword]);
-            $daily_clicks = $ydb->fetchPairs("SELECT DATE(`click_time`) as date, COUNT(*) as count FROM " . YOURLS_DB_TABLE_LOG . " WHERE `keyword` = :keyword AND `click_time` BETWEEN :date_start AND :date_end GROUP BY `date`", ['keyword' => $keyword, 'date_start' => $date_start, 'date_end' => $date_end]);
+            $total_clicks = $ydb->fetchOne("SELECT COUNT(*) as count FROM " . YOURLS_DB_TABLE_LOG . " WHERE `shorturl` = :shorturl", ['shorturl' => $shorturl]);
+            $daily_clicks = $ydb->fetchPairs("SELECT DATE(`click_time`) as date, COUNT(*) as count FROM " . YOURLS_DB_TABLE_LOG . " WHERE `shorturl` = :shorturl AND `click_time` BETWEEN :date_start AND :date_end GROUP BY `date`", ['shorturl' => $shorturl, 'date_start' => $date_start, 'date_end' => $date_end]);
         } catch (\Throwable $e) {
             var_dump($e->getMessage()); die;
         }
@@ -143,4 +143,3 @@ function getDateRange($startDate, $endDate): array
 
     return $results;
 }
-
