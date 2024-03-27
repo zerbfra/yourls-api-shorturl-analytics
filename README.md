@@ -1,4 +1,4 @@
-# Yourls API ShortURL Analytics
+# Plugin for YOURLS: API ShortURL Analytics
 
 [![Plugin Name](https://img.shields.io/badge/Plugin%20Name-ShortURL%20Analytics-blue)](https://github.com/stefanofranco/yourls-api-shorturl-analytics)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
