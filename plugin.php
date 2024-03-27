@@ -2,8 +2,8 @@
 /*
 Plugin Name: API ShortURL Analytics
 Plugin URI: https://github.com/stefanofranco/yourls-api-shorturl-analytics
-Description: This plugin define a custom API action 'shorturl_analytics'
-Version: 1.0
+Description: This plugin defines a custom API action 'shorturl_analytics'
+Version: 1.0.0
 Author: Stefano Franco
 Author URI: https://github.com/stefanofranco/
 */
@@ -12,6 +12,7 @@ yourls_add_filter('api_action_shorturl_analytics', 'shorturl_analytics');
 
 /**
  * @return array
+ * @throws Exception
  */
 function shorturl_analytics(): array
 {
