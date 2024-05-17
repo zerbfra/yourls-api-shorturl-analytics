@@ -1,20 +1,20 @@
 <?php
 /*
-Plugin Name: API ShortURL Analytics
-Plugin URI: https://github.com/stefanofranco/yourls-api-shorturl-analytics
-Description: This plugin defines a custom API action 'shorturl_analytics'
+Plugin Name: API ShortURL Search Analytics
+Plugin URI: https://github.com/zerbfra/yourls-api-shorturl-analytics
+Description: This plugin defines a custom API action 'shorturl_search_analytics'
 Version: 1.0.0
-Author: Stefano Franco
+Author: Stefano Franco, forked by Zerbinati Francesco
 Author URI: https://github.com/stefanofranco/
 */
 
-yourls_add_filter('api_action_shorturl_analytics', 'shorturl_analytics');
+yourls_add_filter('api_action_shorturl_search_analytics', 'shorturl_search_analytics');
 
 /**
  * @return array
  * @throws Exception
  */
-function shorturl_analytics(): array
+function shorturl_search_analytics(): array
 {
 
     // The date parameter must exist
@@ -46,24 +46,18 @@ function shorturl_analytics(): array
         ];
     }
 
-    // Need 'shorturl' parameter
-    if( !isset( $_REQUEST['shorturl'] ) ) {
+    // Need 'search' parameter
+    if( !isset( $_REQUEST['search'] ) ) {
         return [
             'statusCode' => 400,
-            'message'    => 'Missing shorturl parameter',
+            'message'    => 'Missing search parameter',
         ];
     }
-    $shorturl = $_REQUEST['shorturl'];
+    $search = $_REQUEST['search'];
 
-    // Check if valid shorturl
-    if( !yourls_is_shorturl( $shorturl ) ) {
-        return [
-            'statusCode' => 404,
-            'message'    => 'Not found',
-        ];
-    }
 
-    $stats = extractStats($shorturl, $date_start, $date_end);
+
+    $stats = extractStats($search, $date_start, $date_end);
     return [
         'statusCode' => 200,
         'message'    => 'success',
@@ -75,40 +69,27 @@ function shorturl_analytics(): array
 /**
  * @throws Exception
  */
-function extractStats($shorturl, $date_start, $date_end = null)
+function extractStats($search, $date_start, $date_end = null)
 {
     global $ydb;
 
     if (!empty($date_start)) {
 
         $date_end = ($date_end ?? $date_start);
-        $datesRange = getDateRange($date_start, ($date_end ?? $date_start));
 
         // Date must be in YYYY-MM-DD format
         $date_start .= ' 00:00:00';
         $date_end .= ' 23:59:59';
 
         try {
-            // Count total numbers of click
-            $total_clicks = $ydb->fetchOne("SELECT COUNT(*) as count FROM " . YOURLS_DB_TABLE_LOG . " WHERE `shorturl` = :shorturl", ['shorturl' => $shorturl]);
-
-            // Count total numbers of click for any date in the range
-            $daily_clicks = $ydb->fetchPairs("SELECT DATE(`click_time`) as date, COUNT(*) as count FROM " . YOURLS_DB_TABLE_LOG . " WHERE `shorturl` = :shorturl AND `click_time` BETWEEN :date_start AND :date_end GROUP BY `date`", ['shorturl' => $shorturl, 'date_start' => $date_start, 'date_end' => $date_end]);
+            // Get stats for all links with search term
+            $searchTerm = '%'.$search.'%';
+            $search_clicks = $ydb->fetchAll("SELECT keyword, url, clicks FROM " . YOURLS_DB_TABLE_URL . " WHERE `url` LIKE (:search) AND `timestamp` BETWEEN :date_start AND :date_end ORDER BY clicks DESC", ['search' => $searchTerm, 'date_start' => $date_start, 'date_end' => $date_end]);
         } catch (\Throwable $e) {
             var_dump($e->getMessage()); die;
         }
 
-        $results = [
-            'total_clicks' => (int) $total_clicks[array_key_first($total_clicks)],
-            'range_clicks' => 0,
-            'daily_clicks' => [],
-        ];
-        foreach ($datesRange as $date) {
-            $results['daily_clicks'][$date] = (int) ($daily_clicks[$date] ?? 0);
-            $results['range_clicks'] += $results['daily_clicks'][$date];
-        }
-
-        return $results;
+        return $search_clicks;
     }
     return [];
 }
@@ -125,24 +106,4 @@ function checkDateFormat($date, $format='Y-m-d'): bool
 {
     $dateObject = DateTime::createFromFormat($format, $date);
     return $dateObject && $dateObject->format($format) === $date;
-}
-
-/**
- * @throws Exception
- */
-function getDateRange($startDate, $endDate): array
-{
-    $start = new DateTime($startDate);
-    $end = new DateTime($endDate);
-    $end = $end->modify('+1 day');
-
-    $interval = new DateInterval('P1D');
-    $dateRange = new DatePeriod($start, $interval ,$end);
-
-    $results = [];
-    foreach ($dateRange as $date) {
-        $results[] = $date->format('Y-m-d');
-    }
-
-    return $results;
 }
