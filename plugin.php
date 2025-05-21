@@ -55,9 +55,12 @@ function shorturl_search_analytics(): array
     }
     $search = $_REQUEST['search'];
 
+    $field = 'url';
+    if(isset( $_REQUEST['field']) ) {
+        $field = $_REQUEST['field'];
+    }
 
-
-    $stats = extractStats($search, $date_start, $date_end);
+    $stats = extractStats($search, $field, $date_start, $date_end);
     return [
         'statusCode' => 200,
         'message'    => 'success',
@@ -69,7 +72,7 @@ function shorturl_search_analytics(): array
 /**
  * @throws Exception
  */
-function extractStats($search, $date_start, $date_end = null)
+function extractStats($search, $field = 'url', $date_start, $date_end = null)
 {
     global $ydb;
 
@@ -84,7 +87,7 @@ function extractStats($search, $date_start, $date_end = null)
         try {
             // Get stats for all links with search term
             $searchTerm = '%'.$search.'%';
-            $search_clicks = $ydb->fetchAll("SELECT keyword, url, title, clicks FROM " . YOURLS_DB_TABLE_URL . " WHERE `url` LIKE (:search) AND `timestamp` BETWEEN :date_start AND :date_end ORDER BY clicks DESC", ['search' => $searchTerm, 'date_start' => $date_start, 'date_end' => $date_end]);
+            $search_clicks = $ydb->fetchAll("SELECT keyword, url, title, clicks FROM " . YOURLS_DB_TABLE_URL . " WHERE `".$field."` LIKE (:search) AND `timestamp` BETWEEN :date_start AND :date_end ORDER BY clicks DESC", ['search' => $searchTerm, 'date_start' => $date_start, 'date_end' => $date_end]);
         } catch (\Throwable $e) {
             var_dump($e->getMessage()); die;
         }
